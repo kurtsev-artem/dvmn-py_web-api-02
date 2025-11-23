@@ -1,53 +1,61 @@
-
 import requests
 from urllib.parse import urlparse
 import os
 from dotenv import load_dotenv
 
+
 def shorten_link(token, url):
     service_url = 'https://api.vk.ru/method/utils.getShortLink'
-    payload = {'v':'5.199', 'access_token': token,'url':url}
-    response = requests.get(service_url,params=payload)
+    payload = {'v': '5.199', 'access_token': token, 'url': url}
+    response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    if 'error' in response.json().keys():
-        return (response.json()['error']['error_msg'])
-     return 'Сокращенная ссылка: ' + (response.json()['response']['short_url'])
+    response_json = response.json()
+    if 'error' in response_json.keys():
+        raise requests.exceptions.HTTPError(response_json['error']['error_msg'])
+    return response_json['response']['short_url']
+
 
 def count_clicks(token, key):
     service_url = 'https://api.vk.ru/method/utils.getLinkStats'
-    payload = {'v':'5.199', 'access_token': token,'key':key,'interval':'forever'}
-    response = requests.get(service_url,params=payload)
+    payload = {'v': '5.199', 'access_token': token, 'key': key, 'interval': 'forever'}
+    response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    if 'error' in response.json().keys():
-        return (response.json()['error']['error_msg'])
-    return 'Количество кликов: ' + str(response.json()['response']['stats'][0]['views'])
+    response_json = response.json()
+    if 'error' in response_json.keys():
+        raise requests.exceptions.HTTPError(response_json['error']['error_msg'])
+    return str(response_json['response']['stats'][0]['views'])
 
-def is_shorten_link(url):
-    parsed = urlparse(url)
-    if (parsed.netloc == 'vk.cc'):
-        return True
-    else:
-        return False
+
+def is_shorten_link(token, key):
+    service_url = 'https://api.vk.ru/method/utils.getLinkStats'
+    payload = {'v': '5.199', 'access_token': token, 'key': key, 'interval': 'forever'}
+    response = requests.get(service_url, params=payload)
+    response.raise_for_status()
+    response_json = response.json()
+    return 'error' not in response_json.keys()
+
 
 def main():
 
     load_dotenv()
-    token = os.getenv('VK_TOKEN')
-    
-    url =   input('Input URL ')
- 
-    if (not is_shorten_link(url)):
+    token = os.environ['VK_TOKEN']
 
+    url = input('Input URL ')
+    parsed_url = urlparse(url)
+
+    if  is_shorten_link(token, parsed_url.path[1:]):
         try:
-            print (shorten_link(token, url))
+            print('Количество кликов: ' + count_clicks(token, parsed_url.path[1:]))
         except requests.exceptions.HTTPError:
-            print('HTTPError')
-    else:
-        parsed = urlparse(url)
+            print('Вы ввели неправильную ссылку или неверный токен.')
+            raise
+    else:  
         try:
-            print(count_clicks(token, parsed.path[1:]))
+            print('Сокращенная ссылка: ' + shorten_link(token, url))
         except requests.exceptions.HTTPError:
-            print('HTTPError')
+            print('Вы ввели неправильную ссылку или неверный токен.')
+            raise
+
 
 if __name__ == '__main__':
-    main()    
+    main()
