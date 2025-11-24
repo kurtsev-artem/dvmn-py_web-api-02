@@ -9,10 +9,10 @@ def shorten_link(token, url):
     payload = {'v': '5.199', 'access_token': token, 'url': url}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    response_json = response.json()
-    if 'error' in response_json.keys():
-        raise requests.exceptions.HTTPError(response_json['error']['error_msg'])
-    return response_json['response']['short_url']
+    response_dict = response.json()
+    if 'error' in response_dict.keys():
+        raise requests.exceptions.HTTPError(response_dict['error']['error_msg'])
+    return response_dict['response']['short_url']
 
 
 def count_clicks(token, key):
@@ -20,10 +20,10 @@ def count_clicks(token, key):
     payload = {'v': '5.199', 'access_token': token, 'key': key, 'interval': 'forever'}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    response_json = response.json()
-    if 'error' in response_json.keys():
-        raise requests.exceptions.HTTPError(response_json['error']['error_msg'])
-    return str(response_json['response']['stats'][0]['views'])
+    response_dict = response.json()
+    if 'error' in response_dict.keys():
+        raise requests.exceptions.HTTPError(response_dict['error']['error_msg'])
+    return str(response_dict['response']['stats'][0]['views'])
 
 
 def is_shorten_link(token, key):
@@ -31,8 +31,8 @@ def is_shorten_link(token, key):
     payload = {'v': '5.199', 'access_token': token, 'key': key, 'interval': 'forever'}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    response_json = response.json()
-    return 'error' not in response_json.keys()
+    response_dict = response.json()
+    return 'error' not in response_dict.keys()
 
 
 def main():
@@ -45,13 +45,13 @@ def main():
 
     if  is_shorten_link(token, parsed_url.path[1:]):
         try:
-            print('Количество кликов: ' + count_clicks(token, parsed_url.path[1:]))
+            print('Количество кликов: {}'.format(count_clicks(token, parsed_url.path[1:])))
         except requests.exceptions.HTTPError:
             print('Вы ввели неправильную ссылку или неверный токен.')
             raise
     else:  
         try:
-            print('Сокращенная ссылка: ' + shorten_link(token, url))
+            print('Сокращенная ссылка: {}'.format(shorten_link(token, url)))
         except requests.exceptions.HTTPError:
             print('Вы ввели неправильную ссылку или неверный токен.')
             raise
