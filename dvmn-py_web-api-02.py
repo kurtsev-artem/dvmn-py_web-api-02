@@ -9,10 +9,10 @@ def shorten_link(token, url):
     payload = {'v': '5.199', 'access_token': token, 'url': url}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    response_dict = response.json()
-    if 'error' in response_dict.keys():
-        raise requests.exceptions.HTTPError(response_dict['error']['error_msg'])
-    return response_dict['response']['short_url']
+    result = response.json()
+    if 'error' in result.keys():
+        raise requests.exceptions.HTTPError(result['error']['error_msg'])
+    return result['response']['short_url']
 
 
 def count_clicks(token, key):
@@ -20,10 +20,10 @@ def count_clicks(token, key):
     payload = {'v': '5.199', 'access_token': token, 'key': key, 'interval': 'forever'}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    response_dict = response.json()
-    if 'error' in response_dict.keys():
-        raise requests.exceptions.HTTPError(response_dict['error']['error_msg'])
-    return str(response_dict['response']['stats'][0]['views'])
+    result = response.json()
+    if 'error' in result.keys():
+        raise requests.exceptions.HTTPError(result['error']['error_msg'])
+    return str(result['response']['stats'][0]['views'])
 
 
 def is_shorten_link(token, key):
@@ -31,8 +31,8 @@ def is_shorten_link(token, key):
     payload = {'v': '5.199', 'access_token': token, 'key': key, 'interval': 'forever'}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    response_dict = response.json()
-    return 'error' not in response_dict.keys()
+    result = response.json()
+    return 'error' not in result.keys()
 
 
 def main():
