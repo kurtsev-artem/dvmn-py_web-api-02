@@ -9,10 +9,10 @@ def shorten_link(token, url):
     payload = {'v': '5.199', 'access_token': token, 'url': url}
     response = requests.get(service_url, params=payload)
     response.raise_for_status()
-    shorten_links = response.json()
-    if 'error' in shorten_links.keys():
-        raise requests.exceptions.HTTPError(shorten_links['error']['error_msg'])
-    return shorten_links['response']['short_url']
+    shortened_link = response.json()
+    if 'error' in shortened_link.keys():
+        raise requests.exceptions.HTTPError(shortened_link['error']['error_msg'])
+    return shortened_link['response']['short_url']
 
 
 def count_clicks(token, key):
